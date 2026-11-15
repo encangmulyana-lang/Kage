@@ -202,6 +202,7 @@
   .tier-card h3{font-size:22px;letter-spacing:.14em;text-transform:uppercase;font-weight:400;margin:10px 0 4px}
   .tier-card .count{font-size:26px}
   .tier-card p{color:var(--muted);font-size:13px;margin-top:6px}
+  .tier-card .tart{width:100%;height:320px;object-fit:contain;background:#000;display:block;border-radius:4px;margin-bottom:18px}
   /* claim / market / roadmap */
   .duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:980px;margin:44px auto 0;padding:0 22px;text-align:left}
   .duo-card{background:var(--panel);border:1px solid rgba(201,162,39,.22);border-radius:6px;padding:32px 28px}
@@ -277,6 +278,7 @@
     .role-view{min-height:340px}
     .archive-grid{grid-template-columns:repeat(2,1fr)}
     .tier-grid{grid-template-columns:repeat(2,1fr)}
+    .tier-card .tart{height:280px}
     .duo{grid-template-columns:1fr}
     .market-steps{grid-template-columns:1fr}
     .mint-stats{grid-template-columns:1fr;gap:22px}
@@ -501,10 +503,10 @@
   </div>
 
   <div class="tier-grid reveal">
-    <div class="tier-card"><div class="tn">Tier I — 下忍</div><h3>Genin</h3><div class="count mono">3,333</div><p data-en="The first shadow. Every legend starts here." data-ja="最初の影。すべての伝説はここから始まる。" data-zh="第一个影子。每个传说都从这里开始。" data-ko="첫 번째 그림자. 모든 전설은 여기서 시작된다。">The first shadow. Every legend starts here.</p></div>
-    <div class="tier-card"><div class="tn">Tier II — 中忍</div><h3>Chunin</h3><div class="count mono">1,667</div><p data-en="Seen only when it chooses to be seen." data-ja="見られると決めたときにだけ見える。" data-zh="只有在它愿意被看见时才会被看见。" data-ko="보이기로 선택할 때만 보인다。">Seen only when it chooses to be seen.</p></div>
-    <div class="tier-card"><div class="tn">Tier III — 上忍</div><h3>Jonin</h3><div class="count mono">1,111</div><p data-en="A name whispered, never written." data-ja="ささやかれる名、決して書かれない名。" data-zh="一个只被低语、从不被写下的名字。" data-ko="속삭여지는 이름, 절대 쓰이지 않는 이름。">A name whispered, never written.</p></div>
-    <div class="tier-card legend"><div class="tn">Tier IV — 影</div><h3>Kage</h3><div class="count mono">555</div><p data-en="The shadow itself. Rare, silent, final." data-ja="影そのもの。稀少で、静かで、最後のもの。" data-zh="影子本身。稀有、寂静、终极。" data-ko="그림자 그 자체. 희귀하고, 조용하고, 마지막。">The shadow itself. Rare, silent, final.</p></div>
+    <div class="tier-card"><img class="tart" src="images/genin.webp" alt="Genin tier artwork" loading="lazy"><div class="tn">Tier I — 下忍</div><h3>Genin</h3><div class="count mono">3,333</div><p data-en="The first shadow. Every legend starts here." data-ja="最初の影。すべての伝説はここから始まる。" data-zh="第一个影子。每个传说都从这里开始。" data-ko="첫 번째 그림자. 모든 전설은 여기서 시작된다。">The first shadow. Every legend starts here.</p></div>
+    <div class="tier-card"><img class="tart" src="images/chunin.webp" alt="Chunin tier artwork" loading="lazy"><div class="tn">Tier II — 中忍</div><h3>Chunin</h3><div class="count mono">1,667</div><p data-en="Seen only when it chooses to be seen." data-ja="見られると決めたときにだけ見える。" data-zh="只有在它愿意被看见时才会被看见。" data-ko="보이기로 선택할 때만 보인다。">Seen only when it chooses to be seen.</p></div>
+    <div class="tier-card"><img class="tart" src="images/jonin.webp" alt="Jonin tier artwork" loading="lazy"><div class="tn">Tier III — 上忍</div><h3>Jonin</h3><div class="count mono">1,111</div><p data-en="A name whispered, never written." data-ja="ささやかれる名、決して書かれない名。" data-zh="一个只被低语、从不被写下的名字。" data-ko="속삭여지는 이름, 절대 쓰이지 않는 이름。">A name whispered, never written.</p></div>
+    <div class="tier-card legend"><img class="tart" src="images/kage.webp" alt="Kage tier artwork" loading="lazy"><div class="tn">Tier IV — 影</div><h3>Kage</h3><div class="count mono">555</div><p data-en="The shadow itself. Rare, silent, final." data-ja="影そのもの。稀少で、静かで、最後のもの。" data-zh="影子本身。稀有、寂静、终极。" data-ko="그림자 그 자체. 희귀하고, 조용하고, 마지막。">The shadow itself. Rare, silent, final.</p></div>
   </div>
 
   <div class="duo reveal">
