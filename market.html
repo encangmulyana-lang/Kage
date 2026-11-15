@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAGE 影 — The Night Market</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:linear-gradient(180deg,#141210 0%,#0C0D0E 42%,#0A0908 100%);color:#F3EBDC;
+  font-family:Georgia,'Times New Roman',serif;line-height:1.75;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased}
+body>*{position:relative;z-index:1}
+h1,h2,h3{font-weight:400;letter-spacing:.14em;text-transform:uppercase}
+a{color:#C9A227}
+::selection{background:#C9A227;color:#0C0D0E}
+:focus-visible{outline:3px solid #C9A227;outline-offset:2px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;position:sticky;top:0;
+  background:rgba(12,13,14,.94);border-bottom:1px solid rgba(201,162,39,.18);z-index:10}
+nav .logo{color:#F3EBDC;font-size:18px;letter-spacing:.34em;white-space:nowrap;text-decoration:none}
+nav .logo span{color:#C9A227}
+nav a{color:#8A8578;text-decoration:none;margin-left:16px;font-size:13px;letter-spacing:.2em;text-transform:uppercase}
+nav a:hover{color:#C9A227}
+nav a.on{color:#C9A227}
+.langbtns{display:inline-flex;gap:4px;margin-left:14px}
+.langbtns button{background:transparent;border:1px solid rgba(201,162,39,.4);color:#C9A227;padding:6px 10px;font-family:inherit;font-size:11px;cursor:pointer;border-radius:3px;min-height:36px}
+.langbtns button.on{background:#C9A227;color:#0C0D0E;border-color:transparent}
+.navrow2{display:none}
+#embers{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:2}
+.ember{position:absolute;top:-24px;border-radius:50%;animation:emberFall linear infinite;will-change:transform,opacity}
+@keyframes emberFall{0%{transform:translateY(-30px) translateX(0)}50%{transform:translateY(50vh) translateX(14px)}100%{transform:translateY(105vh) translateX(-8px)}}
+.hero{position:relative;text-align:center;padding:0 0 40px}
+.hero img.bg{width:100%;max-width:600px;max-height:440px;object-fit:contain;display:block;margin:0 auto;
+  -webkit-mask-image:linear-gradient(180deg,#000 55%,transparent 98%);mask-image:linear-gradient(180deg,#000 55%,transparent 98%)}
+.hero .inner{padding:8px 20px 0;margin-top:-70px}
+.hero h1{font-size:clamp(26px,7vw,44px);line-height:1.3;color:#F3EBDC;animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+.hero h1 .gld{color:#C9A227}
+.hero p.sub{margin:18px auto 0;max-width:640px;color:#8A8578;line-height:1.7;
+  animation:rise .7s .12s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.badge{display:inline-block;background:#141210;border:1px solid #C9A227;color:#C9A227;
+  padding:8px 14px;font-size:12px;margin-top:18px;letter-spacing:.2em;border-radius:3px;
+  animation:heroFloat 3s ease-in-out infinite}
+@keyframes heroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.marketbox{max-width:560px;margin:34px auto 0;background:#141210;border:1px solid rgba(201,162,39,.3);
+  padding:26px 22px;text-align:left;border-radius:6px;
+  box-shadow:0 0 28px rgba(201,162,39,.12),0 20px 50px rgba(0,0,0,.5);
+  animation:rise .7s .2s cubic-bezier(.2,.8,.2,1) both}
+.marketbox h2{font-size:18px;color:#C9A227;margin-bottom:14px;line-height:1.5}
+.marketbox .counter{font-size:14px;margin:10px 0;color:#8A8578}
+.btn{display:inline-block;background:linear-gradient(180deg,#C9A227,#8a6d1a);color:#0C0D0E;border:none;padding:13px 22px;
+  font-family:inherit;font-size:14px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;margin-top:10px;border-radius:3px;
+  box-shadow:0 0 24px rgba(201,162,39,.25);transition:transform .15s ease,filter .2s;min-height:44px}
+.btn:hover{filter:brightness(1.1)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:#C9A227;border:1px solid rgba(201,162,39,.4);box-shadow:none}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+#marketMsg{font-size:13px;color:#8A8578;margin-top:10px;line-height:1.7;word-break:break-word}
+.nowallet{display:none;background:rgba(255,80,80,.12);border:1px solid #ff5050;color:#ffb3b3;font-size:13px;line-height:1.7;padding:12px 14px;margin-top:12px;border-radius:3px}
+.nowallet.show{display:block}
+.fee-line{font-size:14px;color:#C9A227;margin-top:14px;line-height:1.9}
+.addr{font-size:11px;color:#8A8578;word-break:break-all;margin-top:10px;line-height:1.7}
+.addr a{color:#8A8578}
+.manual{margin-top:18px}
+.manual input{width:100%;padding:12px;font-family:inherit;font-size:14px;background:#0C0D0E;color:#F3EBDC;
+  border:1px solid rgba(201,162,39,.2);margin:8px 0;transition:border-color .2s;border-radius:3px}
+.manual input:focus{border-color:#C9A227;outline:none}
+.manual label{font-size:13px;color:#8A8578}
+section{max-width:1020px;margin:0 auto;padding:48px 20px}
+section h2{font-size:clamp(18px,4vw,26px);color:#C9A227;margin-bottom:22px;line-height:1.4}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:22px}
+.card{background:#141210;border:1px solid rgba(201,162,39,.3);border-radius:6px;overflow:hidden;
+  box-shadow:0 0 24px rgba(201,162,39,.08),0 16px 40px rgba(0,0,0,.45)}
+.card img{width:100%;height:280px;object-fit:contain;background:#0A0908;display:block}
+.card .body{padding:16px 16px 18px}
+.card .tid{font-size:12px;letter-spacing:.2em;color:#C9A227}
+.card h3{font-size:18px;margin:6px 0 2px}
+.card .meta{font-size:13px;color:#8A8578;line-height:1.8}
+.card .price{font-size:20px;color:#C9A227;margin:10px 0 2px;letter-spacing:.06em}
+.card .seller{font-size:11px;color:#8A8578;word-break:break-all}
+.card .own{font-size:11px;letter-spacing:.2em;color:#0C0D0E;background:#C9A227;display:inline-block;padding:3px 8px;border-radius:3px;margin-top:8px}
+.card .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.card .row .btn{margin-top:0;flex:1;padding:11px 10px;font-size:12px}
+.card .row input{flex:1;min-width:110px;padding:10px;font-family:inherit;font-size:13px;background:#0C0D0E;color:#F3EBDC;border:1px solid rgba(201,162,39,.2);border-radius:3px}
+.card .row input:focus{border-color:#C9A227;outline:none}
+.empty{border:1px dashed rgba(201,162,39,.35);border-radius:6px;padding:34px 22px;text-align:center;color:#8A8578;margin-top:22px;line-height:1.9}
+.ladder{width:100%;border-collapse:collapse;font-size:14px}
+.ladder td,.ladder th{border:1px solid rgba(201,162,39,.14);padding:13px;text-align:left}
+.ladder th{color:#C9A227}
+.ladder tr{transition:background .2s}
+.ladder tr:hover{background:rgba(201,162,39,.06)}
+.ladder tr td:first-child{color:#C9A227}
+ol.steps{line-height:2;color:#8A8578;padding-left:22px}
+ol.steps li{margin-bottom:6px}
+ol.steps b{color:#C9A227}
+footer{text-align:center;padding:30px 20px;color:#8A8578;border-top:1px solid rgba(201,162,39,.14);font-size:12px;line-height:2}
+footer a{color:#C9A227;text-decoration:none}
+.reveal{opacity:0;transform:translateY(22px);
+  transition:opacity .6s cubic-bezier(.2,.8,.2,1),transform .6s cubic-bezier(.2,.8,.2,1)}
+.reveal.on{opacity:1;transform:none}
+@media (max-width:900px){
+.grid{grid-template-columns:1fr}
+.card img{height:320px}
+}
+@media (max-width:640px){
+nav{flex-wrap:wrap;gap:8px;padding:12px 14px}
+.navrow2{display:flex;flex-basis:100%;order:6;margin-top:2px}
+.navrow2 .langbtns{display:flex;flex-wrap:nowrap;overflow-x:auto;margin-left:0;gap:4px;padding-bottom:2px}
+.navrow2 .langbtns button{flex:0 0 auto;white-space:nowrap}
+nav .logo{font-size:15px}
+nav a{font-size:12px;margin-left:10px}
+.langbtns{display:none}
+.hero .inner{padding:0 14px;margin-top:-46px}
+.hero h1{font-size:24px}
+.hero p.sub{font-size:14px}
+.marketbox{padding:20px 14px;margin:28px 12px 0}
+.marketbox .btn{width:100%;margin-top:8px}
+section{padding:32px 14px}
+.ladder{font-size:12px}
+.ladder td,.ladder th{padding:10px}
+.card img{height:300px}
+}
+@media (prefers-reduced-motion:reduce){
+*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+html{scroll-behavior:auto}
+.reveal{opacity:1;transform:none}
+}
+</style></head><body><div id="embers" aria-hidden="true"></div>
+<nav><a class="logo" href="index.html"><span>影</span> KAGE</a><span><a href="index.html" data-en="Mint" data-ja="ミント" data-zh="铸造" data-ko="민트">Mint</a><a href="market.html" class="on" data-en="Market" data-ja="市場" data-zh="市场" data-ko="시장">Market</a><a href="claim.html" data-en="Claim" data-ja="請求" data-zh="领取" data-ko="청구">Claim</a><a href="https://x.com/kagenft_" target="_blank">𝕏 @kagenft_</a><span class="langbtns"><button data-lang="en" class="on" onclick="setLang('en')">EN</button><button data-lang="ja" onclick="setLang('ja')">JA</button><button data-lang="zh" onclick="setLang('zh')">ZH</button><button data-lang="ko" onclick="setLang('ko')">KO</button></span></span><div class="navrow2"><span class="langbtns"><button data-lang="en" onclick="setLang('en')">EN</button><button data-lang="ja" onclick="setLang('ja')">JA</button><button data-lang="zh" onclick="setLang('zh')">ZH</button><button data-lang="ko" onclick="setLang('ko')">KO</button></span></div></nav>
+<div class="hero"><img class="bg" src="images/ronin.webp" alt="Ronin with one lantern and one blade"><div class="inner"><h1>THE NIGHT <span class="gld">MARKET</span></h1><p class="sub" data-en="Shadows change hands here. The contract holds the NFT until the sale completes — escrow, 5% fee, nothing locked forever." data-ja="ここで影は手を変える。売却が完了するまでコントラクトがNFTを預かる——エスクロー、手数料5%、何も永遠に閉じ込められない。" data-zh="影子在这里易手。在交易完成之前，合约会持有 NFT——托管，费用 5%，没有任何东西会被永远锁住。" data-ko="그림자는 여기서 손을 바꿉니다. 판매가 완료될 때까지 컨트랙트가 NFT를 보관합니다 — 에스크로, 수수료 5%, 영원히 잠기는 것은 없습니다。">Shadows change hands here. The contract holds the NFT until the sale completes — escrow, 5% fee, nothing locked forever.</p><span class="badge" id="marketBadge">MARKET — LIVE</span></div></div>
+
+<section class="reveal" id="listings"><h2>■ <span data-en="LISTED SHADOWS" data-ja="出品中の影" data-zh="在售的影子" data-ko="판매 중인 그림자">LISTED SHADOWS</span></h2>
+<div class="counter" id="listingsCount" style="font-size:14px;color:#8A8578"></div>
+<div id="listingsGrid" class="grid"></div>
+<div id="emptyState" class="empty" style="display:none" data-en="No shadows listed yet. The market fills once the mint opens and holders start listing." data-ja="まだ出品されている影はありません。ミントが始まり、ホルダーが出品し始めると市場はにぎわいます。" data-zh="暂无在售的影子。铸造开启、持有者开始上架后，市场便会热闹起来。" data-ko="아직 판매 중인 그림자가 없습니다. 민트가 열리고 홀더들이 등록하기 시작하면 시장이 채워집니다。">No shadows listed yet. The market fills once the mint opens and holders start listing.</div>
+<button class="btn ghost" id="refreshBtn" onclick="loadListings()" data-en="REFRESH LISTINGS" data-ja="出品を更新" data-zh="刷新在售列表" data-ko="판매 목록 새로고침">REFRESH LISTINGS</button>
+</section>
+
+<div class="marketbox" id="listbox"><h2>■ <span data-en="LIST YOUR KAGE" data-ja="KAGEを出品する" data-zh="上架你的KAGE" data-ko="내 KAGE 등록하기">LIST YOUR KAGE</span></h2>
+<div class="counter" id="balLine" data-en="Connect your wallet to list a KAGE you own." data-ja="ウォレットを接続して、所有するKAGEを出品します。" data-zh="连接钱包以上架你拥有的KAGE。" data-ko="지갑을 연결해 소유한 KAGE를 등록하세요。">Connect your wallet to list a KAGE you own.</div>
+<div class="fee-line" id="feeLine" data-en="Marketplace fee: 5% of the sale price. You receive 95%." data-ja="マーケットプレイス手数料：販売価格の5%。あなたは95%を受け取ります。" data-zh="市场手续费：售价的 5%。你将收到 95%。" data-ko="마켓플레이스 수수료: 판매가의 5%. 당신은 95%를 받습니다。">Marketplace fee: 5% of the sale price. You receive 95%.</div>
+<button class="btn" id="connectBtn" onclick="connectWallet()" data-en="CONNECT WALLET" data-ja="ウォレットを接続" data-zh="连接钱包" data-ko="지갑 연결">CONNECT WALLET</button>
+<div class="nowallet" id="noWalletWarn"></div>
+<div class="manual"><label for="listTokenId" data-en="Token ID to list:" data-ja="出品するトークンID：" data-zh="要上架的 Token ID：" data-ko="등록할 토큰 ID:">Token ID to list:</label><input id="listTokenId" inputmode="numeric" placeholder="e.g. 42"><label for="listPrice" data-en="Price in BNB:" data-ja="価格（BNB）：" data-zh="价格（BNB）：" data-ko="가격(BNB):">Price in BNB:</label><input id="listPrice" inputmode="decimal" placeholder="e.g. 0.001"></div>
+<button class="btn" id="listBtn" onclick="doList()" disabled data-en="LIST IT" data-ja="出品する" data-zh="上架" data-ko="등록하기">LIST IT</button>
+<div id="marketMsg"></div>
+<div class="addr">Market contract: <a href="https://bscscan.com/address/0xFcB9d278e0Cea6294dB041Ecae0235477076555a" target="_blank">0xFcB9d278e0Cea6294dB041Ecae0235477076555a</a></div><div class="addr">NFT contract: <a href="https://bscscan.com/token/0x87E3dD3c8E5Fd23Af5E79792f0C7c7B45c1B6b91" target="_blank">0x87E3dD3c8E5Fd23Af5E79792f0C7c7B45c1B6b91</a></div>
+</div>
+
+<section class="reveal"><h2>■ <span data-en="HOW IT WORKS" data-ja="仕組み" data-zh="如何运作" data-ko="작동 방식">HOW IT WORKS</span></h2>
+<ol class="steps">
+<li data-en="&lt;b&gt;List&lt;/b&gt; — set your price and list. Your KAGE moves into the marketplace contract (approve it first — one tap)." data-ja="&lt;b&gt;出品&lt;/b&gt; — 価格を設定して出品。KAGEはマーケットプレイスのコントラクトに移動します（最初に承認が必要です——ワンタップ）。" data-zh="&lt;b&gt;上架&lt;/b&gt;——设定价格并上架。你的KAGE将移入市场合约（需先授权——点一下即可）。" data-ko="&lt;b&gt;등록&lt;/b&gt; — 가격을 정하고 등록. KAGE는 마켓플레이스 컨트랙트로 이동합니다(먼저 승인 필요 — 한 번의 탭)。"><b>List</b> — set your price and list. Your KAGE moves into the marketplace contract (approve it first — one tap).</li>
+<li data-en="&lt;b&gt;Escrow&lt;/b&gt; — the contract holds the NFT until a buyer pays. Cancel any time and it comes straight back to you." data-ja="&lt;b&gt;エスクロー&lt;/b&gt; — 買い手が支払うまで、コントラクトがNFTを預かります。いつでもキャンセルでき、そのまま返ってきます。" data-zh="&lt;b&gt;托管&lt;/b&gt;——合约会持有NFT，直到买家付款。随时可以取消，NFT会直接退回给你。" data-ko="&lt;b&gt;에스크로&lt;/b&gt; — 구매자가 지불할 때까지 컨트랙트가 NFT를 보관합니다. 언제든 취소하면 바로 돌려받습니다。"><b>Escrow</b> — the contract holds the NFT until a buyer pays. Cancel any time and it comes straight back to you.</li>
+<li data-en="&lt;b&gt;Settle&lt;/b&gt; — a buyer pays and the NFT moves to them at once. The 5% fee goes to the owner." data-ja="&lt;b&gt;決済&lt;/b&gt; — 買い手が支払うと、NFTはすぐに相手に移ります。5%の手数料はオーナーへ。" data-zh="&lt;b&gt;结算&lt;/b&gt;——买家付款后，NFT会立即转移给对方。5%的费用归所有者。" data-ko="&lt;b&gt;정산&lt;/b&gt; — 구매자가 지불하면 NFT가 즉시 이전됩니다. 5% 수수료는 소유자에게 돌아갑니다。"><b>Settle</b> — a buyer pays and the NFT moves to them at once. The 5% fee goes to the owner.</li>
+</ol></section>
+<section class="reveal"><h2>■ <span data-en="FEES" data-ja="手数料" data-zh="费用" data-ko="수수료">FEES</span></h2>
+<table class="ladder"><tr><th data-en="Who" data-ja="誰" data-zh="谁" data-ko="누가">Who</th><th data-en="Amount" data-ja="金額" data-zh="金额" data-ko="금액">Amount</th></tr>
+<tr><td data-en="Buyer pays" data-ja="買い手の支払い" data-zh="买家支付" data-ko="구매자 지불">Buyer pays</td><td data-en="The listing price" data-ja="出品価格" data-zh="上架价格" data-ko="판매 가격">The listing price</td></tr>
+<tr><td data-en="Seller receives" data-ja="売り手の受取" data-zh="卖家收到" data-ko="판매자 수령">Seller receives</td><td data-en="95% of the price" data-ja="価格の95%" data-zh="价格的 95%" data-ko="가격의 95%">95% of the price</td></tr>
+<tr><td data-en="Marketplace fee" data-ja="マーケットプレイス手数料" data-zh="市场手续费" data-ko="마켓플레이스 수수료">Marketplace fee</td><td data-en="5% of the price" data-ja="価格の5%" data-zh="价格的 5%" data-ko="가격의 5%">5% of the price</td></tr></table></section>
+<footer>KAGE — The Night Market on BNB Chain<br><a href="index.html">KAGE</a> &middot; <a href="claim.html">Claim $KAG</a> &middot; <a href="skill.md">Agent skill</a><br><a href="https://x.com/kagenft_" target="_blank">𝕏 @kagenft_</a><br><span data-en="Prices are shown in BNB only." data-ja="価格はBNBでのみ表示されます。" data-zh="价格仅以 BNB 显示。" data-ko="가격은 BNB로만 표시됩니다。">Prices are shown in BNB only.</span></footer>
+<script>
+var NFT="0x87E3dD3c8E5Fd23Af5E79792f0C7c7B45c1B6b91";
+var MARKET="0xFcB9d278e0Cea6294dB041Ecae0235477076555a";
+var META_BASE="https://kage-steel.vercel.app/metadata/";
+var RPCS=["https://bsc-dataseed.bnbchain.org","https://rpc-bsc.48.club"];
+var readProvider=null, signer=null, userAddr=null, feeBps=null;
+var NFT_ABI=["function ownerOf(uint256) view returns (address)","function getApproved(uint256) view returns (address)","function isApprovedForAll(address,address) view returns (bool)","function setApprovalForAll(address,bool)","function approve(address,uint256)"];
+var MARKET_ABI=["function list(uint256,uint256)","function buy(uint256) payable","function cancel(uint256)","function updatePrice(uint256,uint256)","function getListing(uint256) view returns (address,uint256,bool)","function getListedIds() view returns (uint256[])","function feeBps() view returns (uint256)"];
+var STR={
+en:{noWallet:"No browser wallet detected. Open this site inside your wallet app browser (MetaMask / Trust Wallet / Binance Wallet).",txWalletFee:"Your wallet could not prepare this transaction (empty answer from the browser). Open this site inside your wallet app browser (MetaMask / Trust Wallet / Binance Wallet) and try again.",connectFail:"Connect failed: ",connected:"Connected.",loading:"Loading listings...",loaded:"{n} shadow(s) listed.",loadFail:"Could not load listings: ",enterBoth:"Enter a token ID and a price.",badPrice:"Price must be a number greater than 0.",notOwner:"You do not own KAGE #{id}.",alreadyListed:"KAGE #{id} is already listed.",approveSend:"Approving the market to hold your KAGE...",approveDone:"Approved. Now listing...",listSend:"Listing KAGE #{id} for {price} BNB...",listed:"Listed! KAGE #{id} is now on the market for {price} BNB. Tx: ",listFail:"List failed: ",buySend:"Buying KAGE #{id} for {price} BNB...",bought:"Bought! KAGE #{id} is yours now. Tx: ",buyFail:"Buy failed: ",cancelSend:"Cancelling listing for KAGE #{id}...",cancelled:"Cancelled. KAGE #{id} is back in your wallet. Tx: ",cancelFail:"Cancel failed: ",priceSend:"Updating price for KAGE #{id} to {price} BNB...",priceDone:"Price updated. KAGE #{id} is now {price} BNB. Tx: ",priceFail:"Update failed: ",connectFirst:"Connect your wallet first.",seller:"Seller",tier:"Tier",order:"Order",buy:"BUY",cancel:"CANCEL",update:"UPDATE PRICE",yours:"YOURS",newPrice:"New price (BNB)",feeLine:"Marketplace fee: {fee}% of the sale price. You receive {net}%."},
+ja:{noWallet:"ブラウザウォレットが検出されませんでした。MetaMask / Trust Wallet / Binance Wallet のアプリ内ブラウザでこのサイトを開いてください。",txWalletFee:"ウォレットがこの取引を準備できませんでした（ブラウザからの空の応答）。MetaMask / Trust Wallet / Binance Wallet のアプリ内ブラウザでこのサイトを開いて、もう一度お試しください。",connectFail:"接続に失敗しました：",connected:"接続しました。",loading:"出品を読み込み中…",loaded:"出品中の影：{n}体。",loadFail:"出品を読み込めませんでした：",enterBoth:"トークンIDと価格を入力してください。",badPrice:"価格は0より大きい数値で入力してください。",notOwner:"KAGE #{id} はあなたの所有ではありません。",alreadyListed:"KAGE #{id} はすでに出品されています。",approveSend:"市場へのKAGE預託を承認中…",approveDone:"承認しました。出品します…",listSend:"KAGE #{id} を {price} BNB で出品中…",listed:"出品しました！KAGE #{id} が {price} BNB で市場に出ています。Tx：",listFail:"出品に失敗しました：",buySend:"KAGE #{id} を {price} BNB で購入中…",bought:"購入しました！KAGE #{id} はあなたのものです。Tx：",buyFail:"購入に失敗しました：",cancelSend:"KAGE #{id} の出品をキャンセル中…",cancelled:"キャンセルしました。KAGE #{id} がウォレットに戻りました。Tx：",cancelFail:"キャンセルに失敗しました：",priceSend:"KAGE #{id} の価格を {price} BNB に更新中…",priceDone:"価格を更新しました。KAGE #{id} は {price} BNB です。Tx：",priceFail:"更新に失敗しました：",connectFirst:"まずウォレットを接続してください。",seller:"出品者",tier:"ティア",order:"流派",buy:"購入",cancel:"キャンセル",update:"価格を更新",yours:"あなたの出品",newPrice:"新しい価格（BNB）",feeLine:"マーケットプレイス手数料：販売価格の{fee}%。あなたは{net}%を受け取ります。"},
+zh:{noWallet:"未检测到浏览器钱包。请在钱包应用内浏览器（MetaMask / Trust Wallet / Binance Wallet）中打开本站。",txWalletFee:"你的钱包无法准备这笔交易（浏览器返回为空）。请在钱包应用内浏览器（MetaMask / Trust Wallet / Binance Wallet）中打开本站并重试。",connectFail:"连接失败：",connected:"已连接。",loading:"正在加载在售列表…",loaded:"在售的影子：{n} 个。",loadFail:"无法加载在售列表：",enterBoth:"请输入 Token ID 和价格。",badPrice:"价格必须是大于 0 的数字。",notOwner:"你并不拥有 KAGE #{id}。",alreadyListed:"KAGE #{id} 已在售。",approveSend:"正在授权市场托管你的KAGE…",approveDone:"已授权。正在上架…",listSend:"正在以 {price} BNB 上架 KAGE #{id}…",listed:"上架成功！KAGE #{id} 现以 {price} BNB 在售。Tx：",listFail:"上架失败：",buySend:"正在以 {price} BNB 购买 KAGE #{id}…",bought:"购买成功！KAGE #{id} 现在属于你。Tx：",buyFail:"购买失败：",cancelSend:"正在取消 KAGE #{id} 的上架…",cancelled:"已取消。KAGE #{id} 已退回你的钱包。Tx：",cancelFail:"取消失败：",priceSend:"正在将 KAGE #{id} 的价格更新为 {price} BNB…",priceDone:"价格已更新。KAGE #{id} 现为 {price} BNB。Tx：",priceFail:"更新失败：",connectFirst:"请先连接钱包。",seller:"卖家",tier:"等级",order:"流派",buy:"购买",cancel:"取消",update:"更新价格",yours:"你的上架",newPrice:"新价格（BNB）",feeLine:"市场手续费：售价的 {fee}%。你将收到 {net}%."},
+ko:{noWallet:"브라우저 지갑이 감지되지 않았습니다. 지갑 앱 브라우저(MetaMask / Trust Wallet / Binance Wallet) 안에서 이 사이트를 여세요.",txWalletFee:"지갑이 이 트랜잭션을 준비할 수 없었습니다(브라우저 응답 없음). 지갑 앱 브라우저(MetaMask / Trust Wallet / Binance Wallet) 안에서 이 사이트를 열고 다시 시도하세요.",connectFail:"연결 실패: ",connected:"연결됨.",loading:"판매 목록을 불러오는 중…",loaded:"판매 중인 그림자: {n}개.",loadFail:"판매 목록을 불러올 수 없습니다: ",enterBoth:"토큰 ID와 가격을 입력하세요.",badPrice:"가격은 0보다 큰 숫자여야 합니다.",notOwner:"KAGE #{id}는 당신의 소유가 아닙니다.",alreadyListed:"KAGE #{id}는 이미 판매 중입니다.",approveSend:"마켓이 KAGE를 보관하도록 승인하는 중…",approveDone:"승인됨. 등록하는 중…",listSend:"KAGE #{id}를 {price} BNB에 등록하는 중…",listed:"등록됨! KAGE #{id}가 {price} BNB에 시장에 나와 있습니다. Tx: ",listFail:"등록 실패: ",buySend:"KAGE #{id}를 {price} BNB에 구매하는 중…",bought:"구매 완료! KAGE #{id}는 이제 당신의 것입니다. Tx: ",buyFail:"구매 실패: ",cancelSend:"KAGE #{id}의 판매를 취소하는 중…",cancelled:"취소됨. KAGE #{id}가 지갑으로 돌아왔습니다. Tx: ",cancelFail:"취소 실패: ",priceSend:"KAGE #{id}의 가격을 {price} BNB로 업데이트하는 중…",priceDone:"가격이 업데이트되었습니다. KAGE #{id}는 이제 {price} BNB입니다. Tx: ",priceFail:"업데이트 실패: ",connectFirst:"먼저 지갑을 연결하세요.",seller:"판매자",tier:"티어",order:"유파",buy:"구매",cancel:"취소",update:"가격 업데이트",yours:"내 판매",newPrice:"새 가격(BNB)",feeLine:"마켓플레이스 수수료: 판매가의 {fee}%. 당신은 {net}%를 받습니다."}
+};
+var LANG="en";
+function setLang(lang){
+  LANG=["en","ja","zh","ko"].indexOf(lang)>=0?lang:"en";
+  try{ localStorage.setItem("kage-lang",LANG); }catch(e){}
+  document.querySelectorAll("[data-en]").forEach(function(el){
+    var t=el.getAttribute("data-"+LANG)||el.getAttribute("data-en");
+    if(el.children.length){ el.innerHTML=t; } else { el.textContent=t; }
+  });
+  document.querySelectorAll(".langbtns button").forEach(function(b){ b.classList.toggle("on",b.getAttribute("data-lang")===LANG); });
+  document.documentElement.lang=LANG;
+  updateNoWallet();
+  renderCount();
+}
+function msg(t){ document.getElementById("marketMsg").textContent=t; }
+function updateNoWallet(){
+  var w=document.getElementById("noWalletWarn");
+  if(!w) return;
+  var show=!window.ethereum;
+  w.textContent=show?STR[LANG].noWallet:"";
+  w.classList.toggle("show",show);
+}
+async function rpcGasPrice(){
+  for(const url of RPCS){
+    try{ const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_gasPrice",params:[]})});
+      const j=await r.json(); if(j.result) return BigInt(j.result); }catch(e){}
+  } return 1000000000n;
+}
+function txErrMsg(e){
+  const m=(e&&e.message)||String(e||"");
+  if(m.indexOf("invalid BigNumberish")>=0||m.indexOf("value=null")>=0){ return STR[LANG].txWalletFee; }
+  return (e&&e.reason)||m;
+}
+async function getReadProvider(){ if(readProvider) return readProvider; readProvider=new ethers.JsonRpcProvider(RPCS[0]); return readProvider; }
+async function switchRpc(){ var i=RPCS.indexOf(readProvider?readProvider._getConnection().url:RPCS[0]); var next=RPCS[(i+1)%RPCS.length]; readProvider=new ethers.JsonRpcProvider(next); return readProvider; }
+function shortAddr(a){ return a?a.slice(0,6)+"..."+a.slice(-4):""; }
+var listedCount=0;
+function renderCount(){
+  var el=document.getElementById("listingsCount");
+  if(el) el.textContent=STR[LANG].loaded.replace("{n}",listedCount);
+}
+async function fetchMeta(id){
+  try{
+    var r=await fetch(META_BASE+id+".json");
+    if(!r.ok) return null;
+    var j=await r.json();
+    var tier="", order="";
+    (j.attributes||[]).forEach(function(a){ if(a.trait_type==="Tier") tier=a.value; if(a.trait_type==="Order") order=a.value; });
+    return {image:j.image||"",tier:tier,order:order};
+  }catch(e){ return null; }
+}
+async function loadListings(){
+  var grid=document.getElementById("listingsGrid");
+  var empty=document.getElementById("emptyState");
+  document.getElementById("listingsCount").textContent=STR[LANG].loading;
+  grid.innerHTML=""; empty.style.display="none";
+  try{
+    var rp=await getReadProvider();
+    var mk=new ethers.Contract(MARKET,MARKET_ABI,rp);
+    var ids;
+    try{ ids=await mk.getListedIds(); }
+    catch(e){ rp=await switchRpc(); mk=new ethers.Contract(MARKET,MARKET_ABI,rp); ids=await mk.getListedIds(); }
+    var active=[];
+    for(var i=0;i<ids.length;i++){
+      try{
+        var l=await mk.getListing(ids[i]);
+        if(l[2]) active.push({id:ids[i].toString(),seller:l[0],price:l[1]});
+      }catch(e){}
+    }
+    listedCount=active.length;
+    renderCount();
+    if(active.length===0){ empty.style.display="block"; return; }
+    var metas=await Promise.all(active.map(function(x){ return fetchMeta(x.id); }));
+    active.forEach(function(x,idx){
+      var m=metas[idx]||{image:"",tier:"",order:""};
+      var card=document.createElement("div"); card.className="card";
+      var isMine=userAddr&&x.seller.toLowerCase()===userAddr.toLowerCase();
+      var priceBnb=ethers.formatEther(x.price);
+      var html="";
+      if(m.image) html+='<img src="'+m.image+'" alt="Kage #'+x.id+'" loading="lazy">';
+      html+='<div class="body"><div class="tid">KAGE #'+x.id+'</div>';
+      html+='<h3>'+(m.tier||"Kage")+'</h3>';
+      html+='<div class="meta">'+STR[LANG].tier+': '+(m.tier||"—")+'<br>'+STR[LANG].order+': '+(m.order||"—")+'</div>';
+      html+='<div class="price">'+priceBnb+' BNB</div>';
+      html+='<div class="seller">'+STR[LANG].seller+': '+shortAddr(x.seller)+'</div>';
+      if(isMine) html+='<span class="own">'+STR[LANG].yours+'</span>';
+      html+='<div class="row">';
+      if(isMine){
+        html+='<button class="btn ghost" data-act="cancel" data-id="'+x.id+'">'+STR[LANG].cancel+'</button>';
+        html+='<input data-price-for="'+x.id+'" inputmode="decimal" placeholder="'+STR[LANG].newPrice+'">';
+        html+='<button class="btn" data-act="update" data-id="'+x.id+'">'+STR[LANG].update+'</button>';
+      } else {
+        html+='<button class="btn" data-act="buy" data-id="'+x.id+'" data-price="'+x.price.toString()+'">'+STR[LANG].buy+'</button>';
+      }
+      html+='</div></div>';
+      card.innerHTML=html;
+      grid.appendChild(card);
+    });
+    grid.querySelectorAll("[data-act]").forEach(function(b){
+      b.onclick=function(){
+        var act=b.getAttribute("data-act"), id=b.getAttribute("data-id");
+        if(act==="buy") doBuy(id,b.getAttribute("data-price"));
+        else if(act==="cancel") doCancel(id);
+        else if(act==="update"){
+          var inp=grid.querySelector('[data-price-for="'+id+'"]');
+          doUpdatePrice(id,inp?inp.value:"");
+        }
+      };
+    });
+  }catch(e){
+    document.getElementById("listingsCount").textContent=STR[LANG].loadFail+(e&&e.message?e.message:e);
+  }
+}
+async function loadFee(){
+  try{
+    var rp=await getReadProvider();
+    var mk=new ethers.Contract(MARKET,MARKET_ABI,rp);
+    feeBps=Number(await mk.feeBps());
+    var feePct=(feeBps/100).toString();
+    var net=(100-feeBps/100).toString();
+    document.getElementById("feeLine").textContent=STR[LANG].feeLine.replace("{fee}",feePct).replace("{net}",net);
+  }catch(e){}
+}
+async function connectWallet(){
+  if(!window.ethereum){ msg(STR[LANG].noWallet); updateNoWallet(); return; }
+  try{
+    var bp=new ethers.BrowserProvider(window.ethereum);
+    var net=await bp.getNetwork();
+    if(net.chainId!==56n){ await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:"0x38"}]}); }
+    signer=await bp.getSigner(); userAddr=await signer.getAddress();
+    document.getElementById("connectBtn").textContent=userAddr.slice(0,6)+"..."+userAddr.slice(-4);
+    document.getElementById("listBtn").disabled=false;
+    document.getElementById("balLine").textContent=STR[LANG].connected;
+    msg("");
+    loadListings();
+  }catch(e){ msg(STR[LANG].connectFail+(e&&e.message?e.message:e)); }
+}
+async function ensureSigner(){
+  if(signer&&userAddr) return true;
+  if(!window.ethereum){ msg(STR[LANG].noWallet); updateNoWallet(); return false; }
+  await connectWallet();
+  return !!(signer&&userAddr);
+}
+async function doList(){
+  var idRaw=document.getElementById("listTokenId").value.trim();
+  var priceRaw=document.getElementById("listPrice").value.trim();
+  if(!idRaw||!priceRaw){ msg(STR[LANG].enterBoth); return; }
+  var priceNum=Number(priceRaw);
+  if(!isFinite(priceNum)||priceNum<=0){ msg(STR[LANG].badPrice); return; }
+  if(!(await ensureSigner())){ msg(STR[LANG].connectFirst); return; }
+  var btn=document.getElementById("listBtn"); btn.disabled=true;
+  try{
+    var rp=await getReadProvider();
+    var nft=new ethers.Contract(NFT,NFT_ABI,rp);
+    var mk=new ethers.Contract(MARKET,MARKET_ABI,rp);
+    var owner=await nft.ownerOf(idRaw);
+    if(owner.toLowerCase()!==userAddr.toLowerCase()){ msg(STR[LANG].notOwner.replace("{id}",idRaw)); btn.disabled=false; return; }
+    var cur=await mk.getListing(idRaw);
+    if(cur[2]){ msg(STR[LANG].alreadyListed.replace("{id}",idRaw)); btn.disabled=false; return; }
+    var approved=await nft.isApprovedForAll(userAddr,MARKET);
+    if(!approved){
+      try{ var ga=await nft.getApproved(idRaw); approved=ga.toLowerCase()===MARKET.toLowerCase(); }catch(e){}
+    }
+    var gp=await rpcGasPrice();
+    var nftS=new ethers.Contract(NFT,NFT_ABI,signer);
+    var mkS=new ethers.Contract(MARKET,MARKET_ABI,signer);
+    if(!approved){
+      msg(STR[LANG].approveSend);
+      var atx=await nftS.setApprovalForAll(MARKET,true,{gasPrice:gp,gasLimit:100000n});
+      await atx.wait();
+      msg(STR[LANG].approveDone);
+    }
+    var priceWei=ethers.parseEther(priceRaw);
+    msg(STR[LANG].listSend.replace("{id}",idRaw).replace("{price}",priceRaw));
+    var tx=await mkS.list(idRaw,priceWei,{gasPrice:gp,gasLimit:300000n});
+    msg(STR[LANG].listSend.replace("{id}",idRaw).replace("{price}",priceRaw)+" Tx: "+tx.hash);
+    await tx.wait();
+    msg(STR[LANG].listed.replace("{id}",idRaw).replace("{price}",priceRaw)+tx.hash);
+    document.getElementById("listTokenId").value=""; document.getElementById("listPrice").value="";
+    loadListings();
+  }catch(e){ msg(STR[LANG].listFail+txErrMsg(e)); }
+  btn.disabled=false;
+}
+async function doBuy(id,priceWeiStr){
+  if(!(await ensureSigner())){ msg(STR[LANG].connectFirst); return; }
+  var priceWei=BigInt(priceWeiStr);
+  var priceBnb=ethers.formatEther(priceWei);
+  try{
+    var gp=await rpcGasPrice();
+    var mkS=new ethers.Contract(MARKET,MARKET_ABI,signer);
+    msg(STR[LANG].buySend.replace("{id}",id).replace("{price}",priceBnb));
+    var tx=await mkS.buy(id,{value:priceWei,gasPrice:gp,gasLimit:300000n});
+    msg(STR[LANG].buySend.replace("{id}",id).replace("{price}",priceBnb)+" Tx: "+tx.hash);
+    await tx.wait();
+    msg(STR[LANG].bought.replace("{id}",id)+tx.hash);
+    loadListings();
+  }catch(e){ msg(STR[LANG].buyFail+txErrMsg(e)); }
+}
+async function doCancel(id){
+  if(!(await ensureSigner())){ msg(STR[LANG].connectFirst); return; }
+  try{
+    var gp=await rpcGasPrice();
+    var mkS=new ethers.Contract(MARKET,MARKET_ABI,signer);
+    msg(STR[LANG].cancelSend.replace("{id}",id));
+    var tx=await mkS.cancel(id,{gasPrice:gp,gasLimit:200000n});
+    await tx.wait();
+    msg(STR[LANG].cancelled.replace("{id}",id)+tx.hash);
+    loadListings();
+  }catch(e){ msg(STR[LANG].cancelFail+txErrMsg(e)); }
+}
+async function doUpdatePrice(id,priceRaw){
+  priceRaw=(priceRaw||"").trim();
+  var priceNum=Number(priceRaw);
+  if(!isFinite(priceNum)||priceNum<=0){ msg(STR[LANG].badPrice); return; }
+  if(!(await ensureSigner())){ msg(STR[LANG].connectFirst); return; }
+  try{
+    var gp=await rpcGasPrice();
+    var mkS=new ethers.Contract(MARKET,MARKET_ABI,signer);
+    msg(STR[LANG].priceSend.replace("{id}",id).replace("{price}",priceRaw));
+    var tx=await mkS.updatePrice(id,ethers.parseEther(priceRaw),{gasPrice:gp,gasLimit:200000n});
+    await tx.wait();
+    msg(STR[LANG].priceDone.replace("{id}",id).replace("{price}",priceRaw)+tx.hash);
+    loadListings();
+  }catch(e){ msg(STR[LANG].priceFail+txErrMsg(e)); }
+}
+function makeEmbers(){
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var box=document.getElementById("embers"); if(!box) return;
+  for(var i=0;i<10;i++){
+    var p=document.createElement("span"); p.className="ember";
+    var size=4+Math.random()*5;
+    p.style.left=(Math.random()*100)+"vw";
+    p.style.width=size+"px"; p.style.height=size+"px";
+    p.style.background="#C9A227";
+    p.style.animationDuration=(9+Math.random()*7)+"s";
+    p.style.animationDelay=(-Math.random()*14)+"s";
+    p.style.opacity=(0.35+Math.random()*0.4).toFixed(2);
+    box.appendChild(p);
+  }
+}
+(function(){
+  var saved=null; try{ saved=localStorage.getItem("kage-lang"); }catch(e){}
+  var nav=(navigator.language||"en").toLowerCase();
+  var auto=nav.indexOf("zh")===0?"zh":nav.indexOf("ja")===0?"ja":nav.indexOf("ko")===0?"ko":"en";
+  setLang(saved||auto);
+})();
+makeEmbers();
+document.querySelectorAll(".reveal").forEach(function(el){ new IntersectionObserver(function(es,o){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("on");o.disconnect();}})}).observe(el); });
+window.addEventListener("scroll",function(){ var nav=document.querySelector("nav"); if(nav) nav.classList.toggle("scrolled",window.scrollY>10); },{passive:true});
+updateNoWallet();
+loadFee();
+loadListings();
+</script></body></html>
