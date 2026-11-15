@@ -268,6 +268,9 @@
   /* language switch fade */
   body.lang-fade{animation:langFade .35s ease}
   @keyframes langFade{from{opacity:0}to{opacity:1}}
+  @media (max-width:1400px){
+    nav{gap:14px;font-size:11px}
+  }
   @media (max-width:900px){
     nav{display:none}
     #burger{display:block}
@@ -301,7 +304,10 @@
     <a href="#creed" data-en="Creed" data-ja="信条" data-zh="信条" data-ko="신조">Creed</a>
     <a href="#orders" data-en="Orders" data-ja="流派" data-zh="流派" data-ko="유파">Orders</a>
     <a href="#archive" data-en="Archive" data-ja="記録" data-zh="记录" data-ko="기록">Archive</a>
-    <a href="#chronicle" data-en="Chronicle" data-ja="年代記" data-zh="编年史" data-ko="연대기">Chronicle</a>
+    <a href="#chronicle" data-en="Roadmap" data-ja="ロードマップ" data-zh="路线图" data-ko="로드맵">Roadmap</a>
+    <a href="claim.html" data-en="Claim" data-ja="請求" data-zh="领取" data-ko="청구">Claim</a>
+    <a href="#token" data-en="Token" data-ja="トークン" data-zh="代币" data-ko="토큰">Token</a>
+    <a href="#marketplace" data-en="Marketplace" data-ja="マーケットプレイス" data-zh="市场" data-ko="마켓플레이스">Marketplace</a>
   </nav>
   <div style="display:flex;gap:10px;align-items:center">
     <div class="lang-pills" id="langPills">
@@ -319,8 +325,11 @@
   <a href="#creed" data-en="Creed" data-ja="信条" data-zh="信条" data-ko="신조">Creed</a>
   <a href="#orders" data-en="Orders" data-ja="流派" data-zh="流派" data-ko="유파">Orders</a>
   <a href="#archive" data-en="Archive" data-ja="記録" data-zh="记录" data-ko="기록">Archive</a>
-  <a href="#chronicle" data-en="Chronicle" data-ja="年代記" data-zh="编年史" data-ko="연대기">Chronicle</a>
+  <a href="#chronicle" data-en="Roadmap" data-ja="ロードマップ" data-zh="路线图" data-ko="로드맵">Roadmap</a>
   <a href="#mint" data-en="Mint" data-ja="ミント" data-zh="铸造" data-ko="민트">Mint</a>
+  <a href="claim.html" data-en="Claim" data-ja="請求" data-zh="领取" data-ko="청구">Claim</a>
+  <a href="#token" data-en="Token" data-ja="トークン" data-zh="代币" data-ko="토큰">Token</a>
+  <a href="#marketplace" data-en="Marketplace" data-ja="マーケットプレイス" data-zh="市场" data-ko="마켓플레이스">Marketplace</a>
   <div class="lang-pills" id="langPillsMobile">
     <button class="lang-pill active" data-lang="en">EN</button>
     <button class="lang-pill" data-lang="ja">JA</button>
@@ -509,7 +518,7 @@
     <div class="tier-card legend"><img class="tart" src="images/kage.webp" alt="Kage tier artwork" loading="lazy"><div class="tn">Tier IV — 影</div><h3>Kage</h3><div class="count mono">555</div><p data-en="The shadow itself. Rare, silent, final." data-ja="影そのもの。稀少で、静かで、最後のもの。" data-zh="影子本身。稀有、寂静、终极。" data-ko="그림자 그 자체. 희귀하고, 조용하고, 마지막。">The shadow itself. Rare, silent, final.</p></div>
   </div>
 
-  <div class="duo reveal">
+  <div class="duo reveal" id="token">
     <div class="duo-card">
       <div class="label" data-en="$KAG — Claim Token" data-ja="$KAG — クレームトークン" data-zh="$KAG — 领取代币" data-ko="$KAG — 클레임 토큰">$KAG — Claim Token</div>
       <div class="big mono">$KAG</div>
@@ -518,7 +527,7 @@
       The claim is the reason to return — the flame that keeps burning after the mint.</p>
       <a class="btn" href="claim.html" data-en="Claim $KAG →" data-ja="$KAGを請求 →" data-zh="领取 $KAG →" data-ko="$KAG 청구 →">Claim $KAG &rarr;</a>
     </div>
-    <div class="duo-card">
+    <div class="duo-card" id="marketplace">
       <div class="label" data-en="Marketplace" data-ja="マーケットプレイス" data-zh="市场" data-ko="마켓플레이스">Marketplace</div>
       <div class="big mono">5% fee</div>
       <h3 data-en="The Night Market" data-ja="夜の市場" data-zh="夜市" data-ko="밤 시장">The Night Market</h3>
