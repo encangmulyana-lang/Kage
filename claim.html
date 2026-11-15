@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAGE 影 — Claim $KAG</title>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:linear-gradient(180deg,#141210 0%,#0C0D0E 42%,#0A0908 100%);color:#F3EBDC;
+  font-family:Georgia,'Times New Roman',serif;line-height:1.75;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased}
+body>*{position:relative;z-index:1}
+h1,h2,h3{font-weight:400;letter-spacing:.14em;text-transform:uppercase}
+a{color:#C9A227}
+::selection{background:#C9A227;color:#0C0D0E}
+:focus-visible{outline:3px solid #C9A227;outline-offset:2px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;position:sticky;top:0;
+  background:rgba(12,13,14,.94);border-bottom:1px solid rgba(201,162,39,.18);z-index:10}
+nav .logo{color:#F3EBDC;font-size:18px;letter-spacing:.34em;white-space:nowrap;text-decoration:none}
+nav .logo span{color:#C9A227}
+nav a{color:#8A8578;text-decoration:none;margin-left:16px;font-size:13px;letter-spacing:.2em;text-transform:uppercase}
+nav a:hover{color:#C9A227}
+.langbtns{display:inline-flex;gap:4px;margin-left:14px}
+.langbtns button{background:transparent;border:1px solid rgba(201,162,39,.4);color:#C9A227;padding:6px 10px;font-family:inherit;font-size:11px;cursor:pointer;border-radius:3px;min-height:36px}
+.langbtns button.on{background:#C9A227;color:#0C0D0E;border-color:transparent}
+.navrow2{display:none}
+#embers{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:2}
+.ember{position:absolute;top:-24px;border-radius:50%;animation:emberFall linear infinite;will-change:transform,opacity}
+@keyframes emberFall{0%{transform:translateY(-30px) translateX(0)}50%{transform:translateY(50vh) translateX(14px)}100%{transform:translateY(105vh) translateX(-8px)}}
+.hero{position:relative;text-align:center;padding:0 0 40px}
+.hero img.bg{width:100%;max-width:600px;max-height:440px;object-fit:contain;display:block;margin:0 auto;
+  -webkit-mask-image:linear-gradient(180deg,#000 55%,transparent 98%);mask-image:linear-gradient(180deg,#000 55%,transparent 98%)}
+.hero .inner{padding:8px 20px 0;margin-top:-70px}
+.hero h1{font-size:clamp(26px,7vw,44px);line-height:1.3;color:#F3EBDC;animation:rise .7s cubic-bezier(.2,.8,.2,1) both}
+.hero h1 .gld{color:#C9A227}
+.hero p.sub{margin:18px auto 0;max-width:640px;color:#8A8578;line-height:1.7;
+  animation:rise .7s .12s cubic-bezier(.2,.8,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.badge{display:inline-block;background:#141210;border:1px solid #C9A227;color:#C9A227;
+  padding:8px 14px;font-size:12px;margin-top:18px;letter-spacing:.2em;border-radius:3px;
+  animation:heroFloat 3s ease-in-out infinite}
+@keyframes heroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.claimbox{max-width:560px;margin:34px auto 0;background:#141210;border:1px solid rgba(201,162,39,.3);
+  padding:26px 22px;text-align:left;border-radius:6px;
+  box-shadow:0 0 28px rgba(201,162,39,.12),0 20px 50px rgba(0,0,0,.5);
+  animation:rise .7s .2s cubic-bezier(.2,.8,.2,1) both}
+.claimbox h2{font-size:18px;color:#C9A227;margin-bottom:14px;line-height:1.5}
+.claimbox .counter{font-size:14px;margin:10px 0;color:#8A8578}
+.btn{display:inline-block;background:linear-gradient(180deg,#C9A227,#8a6d1a);color:#0C0D0E;border:none;padding:13px 22px;
+  font-family:inherit;font-size:14px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;margin-top:10px;border-radius:3px;
+  box-shadow:0 0 24px rgba(201,162,39,.25);transition:transform .15s ease,filter .2s;min-height:44px}
+.btn:hover{filter:brightness(1.1)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:#C9A227;border:1px solid rgba(201,162,39,.4);box-shadow:none}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+#claimMsg{font-size:13px;color:#8A8578;margin-top:10px;line-height:1.7;word-break:break-word}
+.nowallet{display:none;background:rgba(255,80,80,.12);border:1px solid #ff5050;color:#ffb3b3;font-size:13px;line-height:1.7;padding:12px 14px;margin-top:12px;border-radius:3px}
+.nowallet.show{display:block}
+.fee-line{font-size:14px;color:#C9A227;margin-top:14px;line-height:1.9}
+.addr{font-size:11px;color:#8A8578;word-break:break-all;margin-top:10px;line-height:1.7}
+.addr a{color:#8A8578}
+.claimlist{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px}
+.chk{border:1px solid rgba(201,162,39,.2);padding:10px 14px;font-size:13px;cursor:pointer;
+  transition:all .2s cubic-bezier(.2,.8,.2,1);user-select:none;color:#F3EBDC;border-radius:3px;min-height:44px}
+.chk:hover{border-color:#C9A227;transform:translateY(-2px)}
+.chk:active{transform:scale(.94)}
+.chk.on{border-color:#C9A227;color:#C9A227;background:#0C0D0E;box-shadow:0 0 14px rgba(201,162,39,.2)}
+.manual{margin-top:18px}
+.manual input{width:100%;padding:12px;font-family:inherit;font-size:14px;background:#0C0D0E;color:#F3EBDC;
+  border:1px solid rgba(201,162,39,.2);margin:8px 0;transition:border-color .2s;border-radius:3px}
+.manual input:focus{border-color:#C9A227;outline:none}
+section{max-width:1020px;margin:0 auto;padding:48px 20px}
+section h2{font-size:clamp(18px,4vw,26px);color:#C9A227;margin-bottom:22px;line-height:1.4}
+.ladder{width:100%;border-collapse:collapse;font-size:14px}
+.ladder td,.ladder th{border:1px solid rgba(201,162,39,.14);padding:13px;text-align:left}
+.ladder th{color:#C9A227}
+.ladder tr{transition:background .2s}
+.ladder tr:hover{background:rgba(201,162,39,.06)}
+.ladder tr td:first-child{color:#C9A227}
+ol.steps{line-height:2;color:#8A8578;padding-left:22px}
+ol.steps li{margin-bottom:6px}
+ol.steps b{color:#C9A227}
+footer{text-align:center;padding:30px 20px;color:#8A8578;border-top:1px solid rgba(201,162,39,.14);font-size:12px;line-height:2}
+footer a{color:#C9A227;text-decoration:none}
+.reveal{opacity:0;transform:translateY(22px);
+  transition:opacity .6s cubic-bezier(.2,.8,.2,1),transform .6s cubic-bezier(.2,.8,.2,1)}
+.reveal.on{opacity:1;transform:none}
+@media (max-width:640px){
+nav{flex-wrap:wrap;gap:8px;padding:12px 14px}
+.navrow2{display:flex;flex-basis:100%;order:6;margin-top:2px}
+.navrow2 .langbtns{display:flex;flex-wrap:nowrap;overflow-x:auto;margin-left:0;gap:4px;padding-bottom:2px}
+.navrow2 .langbtns button{flex:0 0 auto;white-space:nowrap}
+nav .logo{font-size:15px}
+nav a{font-size:12px;margin-left:10px}
+.langbtns{display:none}
+.hero .inner{padding:0 14px;margin-top:-46px}
+.hero h1{font-size:24px}
+.hero p.sub{font-size:14px}
+.claimbox{padding:20px 14px;margin:28px 12px 0}
+.claimbox .btn{width:100%;margin-top:8px}
+section{padding:32px 14px}
+.ladder{font-size:12px}
+.ladder td,.ladder th{padding:10px}
+.chk{padding:12px 14px}
+}
+@media (prefers-reduced-motion:reduce){
+*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+html{scroll-behavior:auto}
+.reveal{opacity:1;transform:none}
+}
+</style></head><body><div id="embers" aria-hidden="true"></div>
+<nav><a class="logo" href="index.html"><span>影</span> KAGE</a><span><a href="index.html" data-en="Mint" data-ja="ミント" data-zh="铸造" data-ko="민트">Mint</a><a href="https://x.com/kagenft_" target="_blank">𝕏 @kagenft_</a><span class="langbtns"><button data-lang="en" class="on" onclick="setLang('en')">EN</button><button data-lang="ja" onclick="setLang('ja')">JA</button><button data-lang="zh" onclick="setLang('zh')">ZH</button><button data-lang="ko" onclick="setLang('ko')">KO</button></span></span><div class="navrow2"><span class="langbtns"><button data-lang="en" onclick="setLang('en')">EN</button><button data-lang="ja" onclick="setLang('ja')">JA</button><button data-lang="zh" onclick="setLang('zh')">ZH</button><button data-lang="ko" onclick="setLang('ko')">KO</button></span></div></nav>
+<div class="hero"><img class="bg" src="images/stilllife.webp" alt="Kitsune mask, black katana and paper lantern"><div class="inner"><h1>CLAIM <span class="gld">$KAG</span></h1><p class="sub" data-en="Every KAGE can claim 10,000 KAG, once. Connect your wallet, pick your KAGE, and claim." data-ja="すべてのKAGEは1回だけ10,000 KAGを請求できます。ウォレットを接続し、KAGEを選んで請求しましょう。" data-zh="每个KAGE可领取 10,000 KAG，仅一次。连接钱包，选择你的KAGE并领取。" data-ko="모든 KAGE는 한 번 10,000 KAG을 청구할 수 있습니다. 지갑을 연결하고 KAGE를 선택해 청구하세요。">Every KAGE can claim 10,000 KAG, once. Connect your wallet, pick your KAGE, and claim.</p><span class="badge" id="claimBadge">CLAIM — OPENS SOON</span></div></div>
+<div class="claimbox" id="claim"><h2>■ $KAG CLAIM</h2>
+<div class="counter" id="balLine" data-en="Connect your wallet to see your KAGE and your KAG balance." data-ja="ウォレットを接続すると、KAGEとKAG残高が表示されます。" data-zh="连接钱包以查看你的KAGE和 KAG 余额。" data-ko="지갑을 연결하면 KAGE와 KAG 잔액을 볼 수 있습니다。">Connect your wallet to see your KAGE and your KAG balance.</div>
+<div class="counter" id="kagClaimedLine"></div>
+<div class="fee-line" data-en="Allocation: 10,000 KAG per NFT (one claim per token ID)&lt;br&gt;Claim fee: 0.0004 BNB per NFT" data-ja="配分：NFTあたり10,000 KAG（トークンIDごとに1回）&lt;br&gt;請求手数料：NFTあたり0.0004 BNB" data-zh="分配：每个 NFT 10,000 KAG（每个 Token ID 仅一次）&lt;br&gt;领取手续费：每个 NFT 0.0004 BNB" data-ko="배분: NFT당 10,000 KAG(토큰 ID당 1회)&lt;br&gt;청구 수수료: NFT당 0.0004 BNB">Allocation: 10,000 KAG per NFT (one claim per token ID)<br>Claim fee: 0.0004 BNB per NFT</div>
+<button class="btn" id="connectBtn" onclick="connectWallet()" data-en="CONNECT WALLET" data-ja="ウォレットを接続" data-zh="连接钱包" data-ko="지갑 연결">CONNECT WALLET</button>
+<button class="btn ghost" id="scanBtn" onclick="scanKage()" disabled data-en="SCAN MY KAGE" data-ja="KAGEをスキャン" data-zh="扫描我的KAGE" data-ko="내 KAGE 스캔">SCAN MY KAGE</button>
+<div class="nowallet" id="noWalletWarn"></div>
+<div id="claimList" class="claimlist"></div>
+<div class="manual"><label for="manualIds" data-en="Or enter token IDs (comma-separated):" data-ja="またはトークンIDを入力（カンマ区切り）：" data-zh="或输入 Token ID（以逗号分隔）：" data-ko="또는 토큰 ID 입력(쉼표로 구분):">Or enter token IDs (comma-separated):</label><input id="manualIds" placeholder="e.g. 1, 42, 103"><button class="btn ghost" id="checkBtn" onclick="checkManual()" disabled data-en="CHECK THESE IDS" data-ja="これらのIDを確認" data-zh="检查这些 ID" data-ko="이 ID 확인">CHECK THESE IDS</button></div>
+<div class="counter" id="totalLine"></div>
+<button class="btn" id="claimBtn" onclick="doClaim()" disabled data-en="CLAIM" data-ja="請求する" data-zh="领取" data-ko="청구하기">CLAIM</button>
+<div id="claimMsg"></div>
+<div class="addr">Token contract: <a href="https://bscscan.com/token/0xfe050f3040876D77Df24056243D5A8B97A9D62E3" target="_blank">0xfe050f3040876D77Df24056243D5A8B97A9D62E3</a></div><div class="addr">Claim contract: <a href="https://bscscan.com/address/0xA93cce3580909a8ddC9670880c6F3546f22843E1" target="_blank">0xA93cce3580909a8ddC9670880c6F3546f22843E1</a></div>
+</div>
+<section class="reveal"><h2>■ <span data-en="HOW IT WORKS" data-ja="仕組み" data-zh="如何运作" data-ko="작동 방식">HOW IT WORKS</span></h2>
+<ol class="steps">
+<li data-en="&lt;b&gt;Connect&lt;/b&gt; your wallet on BNB Chain (chain 56)." data-ja="&lt;b&gt;接続&lt;/b&gt; — BNBチェーン（チェーン56）でウォレットを接続します。" data-zh="&lt;b&gt;连接&lt;/b&gt;你的钱包至 BNB 链（链 ID 56）。" data-ko="&lt;b&gt;연결&lt;/b&gt; — BNB 체인(체인 56)에서 지갑을 연결합니다。"><b>Connect</b> your wallet on BNB Chain (chain 56).</li>
+<li data-en="&lt;b&gt;Scan&lt;/b&gt; finds every KAGE you still own that has not claimed yet." data-ja="&lt;b&gt;スキャン&lt;/b&gt; — 未請求のKAGEをすべて見つけます。" data-zh="&lt;b&gt;扫描&lt;/b&gt;会找出你仍拥有且尚未领取的所有KAGE。" data-ko="&lt;b&gt;스캔&lt;/b&gt; — 아직 청구하지 않은 소유 중인 KAGE를 모두 찾습니다。"><b>Scan</b> finds every KAGE you still own that has not claimed yet.</li>
+<li data-en="&lt;b&gt;Claim&lt;/b&gt; — 10,000 KAG per KAGE, minted straight to your wallet. Fee: 0.0004 BNB per NFT." data-ja="&lt;b&gt;請求&lt;/b&gt; — KAGE1体あたり10,000 KAGをウォレットに直接ミント。手数料：NFTあたり0.0004 BNB。" data-zh="&lt;b&gt;领取&lt;/b&gt;——每个KAGE 10,000 KAG，直接铸造到你的钱包。手续费：每个 NFT 0.0004 BNB。" data-ko="&lt;b&gt;청구&lt;/b&gt; — KAGE당 10,000 KAG이 지갑으로 직접 민트됩니다. 수수료: NFT당 0.0004 BNB。"><b>Claim</b> — 10,000 KAG per KAGE, minted straight to your wallet. Fee: 0.0004 BNB per NFT.</li>
+</ol></section>
+<section class="reveal"><h2>■ <span data-en="ALLOCATION" data-ja="配分" data-zh="分配" data-ko="배분">ALLOCATION</span></h2>
+<table class="ladder"><tr><th data-en="Pool" data-ja="プール" data-zh="池" data-ko="풀">Pool</th><th>KAG</th></tr>
+<tr><td data-en="Holders (6,666 x 10,000)" data-ja="ホルダー（6,666 × 10,000）" data-zh="持有者（6,666 × 10,000）" data-ko="홀더(6,666 × 10,000)">Holders (6,666 x 10,000)</td><td>66,660,000</td></tr>
+<tr><td data-en="To owner at deploy" data-ja="デプロイ時にオーナーへ" data-zh="部署时归所有者" data-ko="배포 시 소유자에게">To owner at deploy</td><td>33,340,000</td></tr>
+<tr><td data-en="Total supply (cap)" data-ja="総供給量（上限）" data-zh="总供应量（上限）" data-ko="총 공급량(상한)">Total supply (cap)</td><td>100,000,000</td></tr></table></section>
+<footer>KAG — Kage Token on BNB Chain<br><a href="index.html">KAGE</a> &middot; <a href="skill.md">Agent skill</a><br><a href="https://x.com/kagenft_" target="_blank">𝕏 @kagenft_</a><br><span data-en="Claim fee is shown in BNB only." data-ja="請求手数料はBNBでのみ表示されます。" data-zh="领取手续费仅以 BNB 显示。" data-ko="청구 수수료는 BNB로만 표시됩니다。">Claim fee is shown in BNB only.</span></footer>
+<script>
+var NFT="0x87E3dD3c8E5Fd23Af5E79792f0C7c7B45c1B6b91";
+var TOKEN="0xfe050f3040876D77Df24056243D5A8B97A9D62E3";
+var CLAIM="0xA93cce3580909a8ddC9670880c6F3546f22843E1";
+var DEPLOY_BLOCK=133761541;
+var TRANSFER_TOPIC="0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+var RPCS=["https://bsc-dataseed.bnbchain.org","https://rpc-bsc.48.club"];
+var readProvider=null, signer=null, userAddr=null, feePerNft=null, selected=new Set(), unclaimed=[], minterOk=false;
+var NFT_ABI=["function ownerOf(uint256) view returns (address)"];
+var CLAIM_ABI=["function claim(uint256[]) payable","function claimed(uint256) view returns (bool)","function feePerNft() view returns (uint256)","function ALLOCATION() view returns (uint256)"];
+var TOKEN_ABI=["function balanceOf(address) view returns (uint256)","function totalSupply() view returns (uint256)","function minter() view returns (address)"];
+var CLM_STR={
+en:{noWallet:"No browser wallet detected. Open this site inside your wallet app browser (MetaMask / Trust Wallet / Binance Wallet).",txWalletFee:"Your wallet could not prepare this transaction (empty answer from the browser). Open this site inside your wallet app browser (MetaMask / Trust Wallet / Binance Wallet) and try again.",connectFail:"Connect failed: ",connected:"Connected. Scan your KAGE or enter token IDs.",scanMsg:"Scanning your KAGE on-chain... this may take a few seconds.",noKage:"No KAGE found for this wallet.",foundUnclaimed:"Found {n} unclaimed KAGE. Tap a card to deselect.",allClaimed:"All your KAGE already claimed their KAG.",scanFail:"Scan failed: ",enterId:"Enter at least one token ID.",checkingIds:"Checking those token IDs...",foundManual:"Found {n} unclaimed KAGE.",noneManual:"None of those token IDs can be claimed by this wallet (not owned or already claimed).",claimSend:"Sending claim transaction for {n} KAGE...",claimSent:"Transaction sent: ",waiting:" — waiting for confirmation...",claimed:"Claimed! {n} KAG should now be in your wallet. Tx: ",claimFail:"Claim failed: ",claimNotLive:"Claim is not live yet — the token and claim contracts are not deployed.",minterSoon:"Claim opens soon — the claim contract is not wired to the token yet.",badgeSoon:"CLAIM — OPENS SOON",badgeLive:"CLAIM — LIVE",balPrefix:"KAG balance: ",balSuffix:" KAG",claimedSoFar:"KAGE claimed so far: ",selA:"Selected: ",selB:" KAGE = ",selC:" KAG — fee: ",selD:" BNB"},
+ja:{noWallet:"ブラウザウォレットが検出されませんでした。MetaMask / Trust Wallet / Binance Wallet のアプリ内ブラウザでこのサイトを開いてください。",txWalletFee:"ウォレットがこの取引を準備できませんでした（ブラウザからの空の応答）。MetaMask / Trust Wallet / Binance Wallet のアプリ内ブラウザでこのサイトを開いて、もう一度お試しください。",connectFail:"接続に失敗しました：",connected:"接続しました。KAGEをスキャンするか、トークンIDを入力してください。",scanMsg:"オンチェーンでKAGEをスキャン中…数秒かかる場合があります。",noKage:"このウォレットのKAGEは見つかりませんでした。",foundUnclaimed:"未請求のKAGEが{n}体見つかりました。タップで選択解除できます。",allClaimed:"すべてのKAGEがすでにKAGを請求済みです。",scanFail:"スキャンに失敗しました：",enterId:"トークンIDを少なくとも1つ入力してください。",checkingIds:"それらのトークンIDを確認中…",foundManual:"未請求のKAGEが{n}体見つかりました。",noneManual:"これらのトークンIDはいずれもこのウォレットでは請求できません（未所有または請求済み）。",claimSend:"{n}体のKAGEの請求トランザクションを送信中…",claimSent:"トランザクション送信：",waiting:" — 確認待ち…",claimed:"請求完了！{n} KAGがウォレットに入っているはずです。Tx：",claimFail:"請求に失敗しました：",claimNotLive:"請求はまだ開始していません——トークンと請求コントラクトはまだデプロイされていません。",minterSoon:"請求はまもなく開始——請求コントラクトはまだトークンに接続されていません。",badgeSoon:"請求 — まもなく開始",badgeLive:"請求 — ライブ",balPrefix:"KAG残高：",balSuffix:" KAG",claimedSoFar:"これまでに請求されたKAGE：",selA:"選択：",selB:" 体 = ",selC:" KAG — 手数料：",selD:" BNB"},
+zh:{noWallet:"未检测到浏览器钱包。请在钱包应用内浏览器（MetaMask / Trust Wallet / Binance Wallet）中打开本站。",txWalletFee:"你的钱包无法准备这笔交易（浏览器返回为空）。请在钱包应用内浏览器（MetaMask / Trust Wallet / Binance Wallet）中打开本站并重试。",connectFail:"连接失败：",connected:"已连接。扫描你的KAGE或输入 Token ID。",scanMsg:"正在链上扫描你的KAGE……可能需要几秒钟。",noKage:"未找到该钱包的KAGE。",foundUnclaimed:"找到 {n} 个未领取的KAGE。点按卡片可取消选择。",allClaimed:"你所有的KAGE都已领取过 KAG。",scanFail:"扫描失败：",enterId:"请至少输入一个 Token ID。",checkingIds:"正在检查这些 Token ID……",foundManual:"找到 {n} 个未领取的KAGE。",noneManual:"这些 Token ID 均无法由该钱包领取（未拥有或已领取）。",claimSend:"正在为 {n} 个KAGE发送领取交易……",claimSent:"交易已发送：",waiting:" — 等待确认…",claimed:"领取成功！{n} KAG 应已进入你的钱包。Tx：",claimFail:"领取失败：",claimNotLive:"领取尚未开启——代币与领取合约尚未部署。",minterSoon:"领取即将开启——领取合约尚未与代币连接。",badgeSoon:"领取 — 即将开启",badgeLive:"领取 — 已开启",balPrefix:"KAG 余额：",balSuffix:" KAG",claimedSoFar:"迄今已领取的KAGE：",selA:"已选：",selB:" 个 = ",selC:" KAG — 手续费：",selD:" BNB"},
+ko:{noWallet:"브라우저 지갑이 감지되지 않았습니다. 지갑 앱 브라우저(MetaMask / Trust Wallet / Binance Wallet) 안에서 이 사이트를 여세요.",txWalletFee:"지갑이 이 트랜잭션을 준비할 수 없었습니다(브라우저 응답 없음). 지갑 앱 브라우저(MetaMask / Trust Wallet / Binance Wallet) 안에서 이 사이트를 열고 다시 시도하세요.",connectFail:"연결 실패: ",connected:"연결됨. KAGE를 스캔하거나 토큰 ID를 입력하세요.",scanMsg:"온체인에서 KAGE를 스캔하는 중… 몇 초 걸릴 수 있습니다.",noKage:"이 지갑의 KAGE를 찾을 수 없습니다.",foundUnclaimed:"미청구 KAGE {n}개를 찾았습니다. 카드를 눌러 선택을 해제하세요.",allClaimed:"모든 KAGE가 이미 KAG을 청구했습니다.",scanFail:"스캔 실패: ",enterId:"토큰 ID를 최소 하나 입력하세요.",checkingIds:"해당 토큰 ID를 확인하는 중…",foundManual:"미청구 KAGE {n}개를 찾았습니다.",noneManual:"이 토큰 ID들은 이 지갑으로 청구할 수 없습니다(미소유 또는 이미 청구됨).",claimSend:"{n}개 KAGE의 청구 트랜잭션을 보내는 중…",claimSent:"트랜잭션 전송됨: ",waiting:" — 확인 대기 중…",claimed:"청구 완료! {n} KAG이 지갑에 들어왔을 것입니다. Tx: ",claimFail:"청구 실패: ",claimNotLive:"청구가 아직 시작되지 않았습니다 — 토큰과 청구 컨트랙트가 아직 배포되지 않았습니다.",minterSoon:"청구가 곧 오픈합니다 — 청구 컨트랙트가 아직 토큰에 연결되지 않았습니다.",badgeSoon:"청구 — 곧 오픈",badgeLive:"청구 — 라이브",balPrefix:"KAG 잔액: ",balSuffix:" KAG",claimedSoFar:"지금까지 청구된 KAGE: ",selA:"선택: ",selB:"개 = ",selC:" KAG — 수수료: ",selD:" BNB"}
+};
+var LANG="en";
+function setLang(lang){
+  LANG=["en","ja","zh","ko"].indexOf(lang)>=0?lang:"en";
+  try{ localStorage.setItem("kage-lang",LANG); }catch(e){}
+  document.querySelectorAll("[data-en]").forEach(function(el){
+    var t=el.getAttribute("data-"+LANG)||el.getAttribute("data-en");
+    if(el.children.length){ el.innerHTML=t; } else { el.textContent=t; }
+  });
+  document.querySelectorAll(".langbtns button").forEach(function(b){ b.classList.toggle("on",b.getAttribute("data-lang")===LANG); });
+  document.documentElement.lang=LANG;
+  var badge=document.getElementById("claimBadge");
+  if(badge) badge.textContent=minterOk?CLM_STR[LANG].badgeLive:CLM_STR[LANG].badgeSoon;
+  updateNoWallet();
+}
+function msg(t){ document.getElementById("claimMsg").textContent=t; }
+function updateNoWallet(){
+  var w=document.getElementById("noWalletWarn");
+  if(!w) return;
+  var show=!window.ethereum;
+  w.textContent=show?CLM_STR[LANG].noWallet:"";
+  w.classList.toggle("show",show);
+}
+async function rpcGasPrice(){
+  for(const url of RPCS){
+    try{ const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"eth_gasPrice",params:[]})});
+      const j=await r.json(); if(j.result) return BigInt(j.result); }catch(e){}
+  } return 1000000000n;
+}
+function txErrMsg(e){
+  const m=(e&&e.message)||String(e||"");
+  if(m.indexOf("invalid BigNumberish")>=0||m.indexOf("value=null")>=0){ return CLM_STR[LANG].txWalletFee; }
+  return (e&&e.reason)||m;
+}
+async function getReadProvider(){ if(readProvider) return readProvider; readProvider=new ethers.JsonRpcProvider(RPCS[0]); return readProvider; }
+async function switchRpc(){ var i=RPCS.indexOf(readProvider?readProvider._getConnection().url:RPCS[0]); var next=RPCS[(i+1)%RPCS.length]; readProvider=new ethers.JsonRpcProvider(next); return readProvider; }
+async function checkMinter(){
+  try{
+    var rp=await getReadProvider();
+    var tok=new ethers.Contract(TOKEN,TOKEN_ABI,rp);
+    var m=await tok.minter();
+    minterOk=m.toLowerCase()===CLAIM.toLowerCase();
+    document.getElementById("claimBadge").textContent=minterOk?CLM_STR[LANG].badgeLive:CLM_STR[LANG].badgeSoon;
+    if(!minterOk){ msg(CLM_STR[LANG].minterSoon); }
+  }catch(e){ document.getElementById("claimBadge").textContent=CLM_STR[LANG].badgeSoon; }
+}
+async function loadStats(){
+  try{
+    var rp=await getReadProvider();
+    var tok=new ethers.Contract(TOKEN,TOKEN_ABI,rp);
+    var supply=await tok.totalSupply();
+    var claimed=(supply-33340000n*10n**18n)/(10000n*10n**18n);
+    document.getElementById("kagClaimedLine").textContent=CLM_STR[LANG].claimedSoFar+claimed.toString();
+  }catch(e){}
+}
+async function connectWallet(){
+  if(!TOKEN||TOKEN==="0x0000000000000000000000000000000000000000"||!CLAIM||CLAIM==="0x0000000000000000000000000000000000000000"){ msg(CLM_STR[LANG].claimNotLive); return; }
+  if(!window.ethereum){ msg(CLM_STR[LANG].noWallet); updateNoWallet(); return; }
+  try{
+    var bp=new ethers.BrowserProvider(window.ethereum);
+    var net=await bp.getNetwork();
+    if(net.chainId!==56n){ await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:"0x38"}]}); }
+    signer=await bp.getSigner(); userAddr=await signer.getAddress();
+    document.getElementById("connectBtn").textContent=userAddr.slice(0,6)+"..."+userAddr.slice(-4);
+    document.getElementById("scanBtn").disabled=false; document.getElementById("checkBtn").disabled=false;
+    var rp=await getReadProvider();
+    var tok=new ethers.Contract(TOKEN,TOKEN_ABI,rp);
+    var bal=await tok.balanceOf(userAddr);
+    document.getElementById("balLine").textContent=CLM_STR[LANG].balPrefix+ethers.formatEther(bal)+CLM_STR[LANG].balSuffix;
+    var cl=new ethers.Contract(CLAIM,CLAIM_ABI,rp);
+    feePerNft=await cl.feePerNft();
+    msg(CLM_STR[LANG].connected);
+  }catch(e){ msg(CLM_STR[LANG].connectFail+(e&&e.message?e.message:e)); }
+}
+async function verifyIds(ids){
+  var rp=await getReadProvider();
+  var nft=new ethers.Contract(NFT,NFT_ABI,rp);
+  var cl=new ethers.Contract(CLAIM,CLAIM_ABI,rp);
+  var out=[];
+  for(var s=0;s<ids.length;s+=20){
+    var batch=ids.slice(s,s+20);
+    var res=await Promise.all(batch.map(async function(id){
+      try{ var o=await nft.ownerOf(id); var c=await cl.claimed(id); return (o.toLowerCase()===userAddr.toLowerCase()&&!c)?id:null; }catch(e){ return null; }
+    }));
+    res.forEach(function(x){ if(x!==null) out.push(x); });
+  }
+  return out;
+}
+function renderList(){
+  var box=document.getElementById("claimList"); box.innerHTML="";
+  unclaimed.forEach(function(id){
+    var d=document.createElement("div"); d.className="chk"+(selected.has(id)?" on":""); d.textContent="#"+id;
+    d.onclick=function(){ if(selected.has(id)) selected.delete(id); else selected.add(id); renderList(); };
+    box.appendChild(d);
+  });
+  updateTotal();
+}
+function updateTotal(){
+  var n=selected.size;
+  var feeTxt=feePerNft?ethers.formatEther(feePerNft*BigInt(n)):(0.0004*n).toFixed(5);
+  document.getElementById("totalLine").textContent=n>0?(CLM_STR[LANG].selA+n+CLM_STR[LANG].selB+(n*10000).toLocaleString("en-US")+CLM_STR[LANG].selC+feeTxt+CLM_STR[LANG].selD):"";
+  document.getElementById("claimBtn").disabled=!(n>0&&TOKEN&&CLAIM&&minterOk);
+}
+async function scanKage(){
+  if(!userAddr) return;
+  msg(CLM_STR[LANG].scanMsg);
+  document.getElementById("scanBtn").disabled=true;
+  try{
+    var rp=await getReadProvider();
+    var latest=await rp.getBlockNumber();
+    var padded=ethers.zeroPadValue(userAddr,32);
+    var found=new Set();
+    for(var from=DEPLOY_BLOCK; from<=latest; from+=10000){
+      var to=Math.min(from+9999,latest);
+      try{
+        var logs=await rp.getLogs({address:NFT,fromBlock:from,toBlock:to,topics:[TRANSFER_TOPIC,null,padded]});
+        logs.forEach(function(l){ found.add(BigInt(l.topics[3]).toString()); });
+      }catch(e){ rp=await switchRpc(); var logs2=await rp.getLogs({address:NFT,fromBlock:from,toBlock:to,topics:[TRANSFER_TOPIC,null,padded]}); logs2.forEach(function(l){ found.add(BigInt(l.topics[3]).toString()); }); }
+    }
+    var ids=Array.from(found);
+    if(ids.length===0){ msg(CLM_STR[LANG].noKage); document.getElementById("scanBtn").disabled=false; return; }
+    unclaimed=await verifyIds(ids); selected=new Set(unclaimed); renderList();
+    msg(unclaimed.length>0?(CLM_STR[LANG].foundUnclaimed.replace("{n}",unclaimed.length)):CLM_STR[LANG].allClaimed);
+  }catch(e){ msg(CLM_STR[LANG].scanFail+(e&&e.message?e.message:e)); }
+  document.getElementById("scanBtn").disabled=false;
+}
+async function checkManual(){
+  if(!userAddr) return;
+  var raw=document.getElementById("manualIds").value.split(/[^0-9]+/).filter(function(x){return x!=="";});
+  var ids=Array.from(new Set(raw.map(function(x){return parseInt(x,10);}))).filter(function(x){return !isNaN(x)&&x>=0;});
+  if(ids.length===0){ msg(CLM_STR[LANG].enterId); return; }
+  msg(CLM_STR[LANG].checkingIds);
+  unclaimed=await verifyIds(ids.map(function(x){return x.toString();})); selected=new Set(unclaimed); renderList();
+  msg(unclaimed.length>0?(CLM_STR[LANG].foundManual.replace("{n}",unclaimed.length)):CLM_STR[LANG].noneManual);
+}
+async function doClaim(){
+  if(selected.size===0||!signer) return;
+  if(!minterOk){ msg(CLM_STR[LANG].minterSoon); return; }
+  var ids=Array.from(selected);
+  var btn=document.getElementById("claimBtn"); btn.disabled=true;
+  try{
+    var cl=new ethers.Contract(CLAIM,CLAIM_ABI,signer);
+    var fee=feePerNft?feePerNft*BigInt(ids.length):ethers.parseEther((0.0004*ids.length).toFixed(5));
+    msg(CLM_STR[LANG].claimSend.replace("{n}",ids.length));
+    var gp=await rpcGasPrice(); var gasLimit=Math.max(300000,100000+80000*ids.length);
+    var tx=await cl.claim(ids,{value:fee,gasPrice:gp,gasLimit:BigInt(gasLimit)});
+    msg(CLM_STR[LANG].claimSent+tx.hash+CLM_STR[LANG].waiting);
+    await tx.wait();
+    msg(CLM_STR[LANG].claimed.replace("{n}",(ids.length*10000).toLocaleString("en-US"))+tx.hash);
+    selected=new Set(); unclaimed=unclaimed.filter(function(x){return ids.indexOf(x)<0;}); renderList();
+    var rp=await getReadProvider(); var tok=new ethers.Contract(TOKEN,TOKEN_ABI,rp);
+    var bal=await tok.balanceOf(userAddr);
+    document.getElementById("balLine").textContent=CLM_STR[LANG].balPrefix+ethers.formatEther(bal)+CLM_STR[LANG].balSuffix;
+    loadStats();
+  }catch(e){ msg(CLM_STR[LANG].claimFail+txErrMsg(e)); btn.disabled=false; }
+}
+function makeEmbers(){
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var box=document.getElementById("embers"); if(!box) return;
+  for(var i=0;i<10;i++){
+    var p=document.createElement("span"); p.className="ember";
+    var size=4+Math.random()*5;
+    p.style.left=(Math.random()*100)+"vw";
+    p.style.width=size+"px"; p.style.height=size+"px";
+    p.style.background="#C9A227";
+    p.style.animationDuration=(9+Math.random()*7)+"s";
+    p.style.animationDelay=(-Math.random()*14)+"s";
+    p.style.opacity=(0.35+Math.random()*0.4).toFixed(2);
+    box.appendChild(p);
+  }
+}
+(function(){
+  var saved=null; try{ saved=localStorage.getItem("kage-lang"); }catch(e){}
+  var nav=(navigator.language||"en").toLowerCase();
+  var auto=nav.indexOf("zh")===0?"zh":nav.indexOf("ja")===0?"ja":nav.indexOf("ko")===0?"ko":"en";
+  setLang(saved||auto);
+})();
+makeEmbers();
+document.querySelectorAll(".reveal").forEach(function(el){ new IntersectionObserver(function(es,o){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("on");o.disconnect();}})}).observe(el); });
+window.addEventListener("scroll",function(){ var nav=document.querySelector("nav"); if(nav) nav.classList.toggle("scrolled",window.scrollY>10); },{passive:true});
+updateNoWallet();
+checkMinter(); loadStats();
+</script></body></html>
